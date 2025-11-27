@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { X, Minus, Plus, MessageCircle, ShoppingBag } from 'lucide-react';
-import { CartItem } from '../types';
-import { WHATSAPP_NUMBER } from '../constants';
+import { CartItem } from '../types.ts';
+import { WHATSAPP_NUMBER } from '../constants.ts';
 
 interface CartProps {
   isOpen: boolean;

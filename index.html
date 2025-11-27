@@ -1,42 +1,413 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Artesanal | Villa Ballester</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-      /* Custom scrollbar hiding for horizontal navigation */
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      body {
-        background-color: #121212;
-        color: #E0E0E0;
-      }
-      .font-display {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
+        body { background-color: #121212; color: #E0E0E0; font-family: sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .cart-open { transform: translateX(0) !important; }
+        .badge-anim { transform: scale(1.2); }
     </style>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "vite": "https://aistudiocdn.com/vite@^7.2.4",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
   }
 }
 </script>
 </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+<body class="antialiased min-h-screen relative">
+
+    <!-- DATA & LOGIC -->
+    <script>
+        // --- CONSTANTS & DATA ---
+        const WHATSAPP_NUMBER = "5491120070203";
+        
+        const MENU_ITEMS = [
+            {
+                id: '1',
+                title: 'Sándwich de Bondiola Completo',
+                description: 'El que enamora 😍. Bondiola tierna desmenuzada, jamón, queso, huevo y papas pay en pan casero.',
+                category: 'Sandwiches',
+                imageUrl: 'https://images.unsplash.com/photo-1619860860774-1e2e17343432?q=80&w=1000&auto=format&fit=crop',
+                price: 9500,
+                popular: true,
+            },
+            {
+                id: '2',
+                title: 'Pizza Especial Jamón y Morrones',
+                description: 'Salsa de tomate casera, muzzarella abundante, jamón cocido natural y morrones asados.',
+                category: 'Pizzas',
+                imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/FjHyLkjYCz6Dv7rmq-2400-x.webp',
+                price: 8900,
+                popular: true,
+            },
+            {
+                id: '3',
+                title: 'Super Hamburguesa Artesanal',
+                description: 'Medallón de carne 100% vacuna, cheddar, bacon crujiente, lechuga, tomate y aderezo de la casa.',
+                category: 'Hamburguesas',
+                imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1000&auto=format&fit=crop',
+                price: 7500,
+            },
+            {
+                id: '4',
+                title: 'Milanesa a la Napolitana con Papas',
+                description: 'Para compartir. Milanesa de ternera con salsa, jamón, muzzarella y orégano. Sale con fritas.',
+                category: 'Sandwiches',
+                imageUrl: 'https://i.postimg.cc/1ts93hTW/milanesa-a-la-napolitana-con-guarnicion-de-papas-VLWFAANIWBGPFO4CSUHS7RYVVQ.avif',
+                price: 12500,
+                popular: true,
+            },
+            {
+                id: '5',
+                title: 'Docena de Empanadas',
+                description: 'Carne cortada a cuchillo, Jamón y Queso, o Pollo. Relleno abundante y masa casera.',
+                category: 'Empanadas',
+                imageUrl: 'https://i.postimg.cc/DwmNKjwx/12-EMPANADAS.jpg',
+                price: 10500,
+            },
+            {
+                id: '6',
+                title: 'Pizza Calabresa',
+                description: 'Muzzarella y longaniza calabresa de primera calidad. Un clásico picantito.',
+                category: 'Pizzas',
+                imageUrl: 'https://images.unsplash.com/photo-1548369937-47519962c11a?q=80&w=1000&auto=format&fit=crop',
+                price: 8500,
+            }
+        ];
+
+        const CATEGORIES = ['Todos', 'Pizzas', 'Sandwiches', 'Hamburguesas', 'Empanadas'];
+        let cart = [];
+        let activeCategory = 'Todos';
+
+        // --- FUNCTIONS ---
+
+        function init() {
+            renderHeader();
+            renderHero();
+            renderCategories();
+            renderMenu();
+            renderFooter();
+            lucide.createIcons();
+            
+            // Scroll Listener
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('main-header');
+                if (window.scrollY > 50) {
+                    header.classList.add('bg-[#121212]/95', 'shadow-lg', 'backdrop-blur-md', 'border-b', 'border-[#333]', 'py-3');
+                    header.classList.remove('py-5', 'bg-transparent');
+                } else {
+                    header.classList.remove('bg-[#121212]/95', 'shadow-lg', 'backdrop-blur-md', 'border-b', 'border-[#333]', 'py-3');
+                    header.classList.add('py-5', 'bg-transparent');
+                }
+            });
+        }
+
+        function renderHeader() {
+            const headerHTML = `
+                <div class="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center">
+                    <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+                        <div class="h-11 w-11 rounded-full bg-[#B91C1C] flex items-center justify-center border-2 border-[#FFD700] shadow-lg overflow-hidden">
+                             <i data-lucide="crown" class="text-white fill-[#FFD700] w-5 h-5"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-white tracking-wide text-lg md:text-xl leading-none uppercase">La Artesanal</span>
+                            <span class="text-[#FFD700] text-[10px] font-bold tracking-widest uppercase ml-1">VILLA BALLESTER</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleCart()" class="relative p-3 rounded-full bg-black/60 text-white border border-[#333] hover:border-[#B91C1C] transition-all">
+                        <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                        <span id="cart-badge" class="absolute -top-2 -right-2 bg-[#FFD700] text-black text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-[#121212] hidden transition-transform">0</span>
+                    </button>
+                </div>
+            `;
+            document.getElementById('main-header').innerHTML = headerHTML;
+        }
+
+        function renderHero() {
+            // Already static in body, just icons will init
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = CATEGORIES.map(cat => `
+                <button 
+                    onclick="setCategory('${cat}')"
+                    class="whitespace-nowrap px-6 py-3 font-bold rounded-full text-sm transition-all duration-200 border flex items-center gap-2 tracking-wide uppercase ${activeCategory === cat ? 'bg-[#B91C1C] text-white border-[#B91C1C] shadow-lg' : 'bg-transparent text-gray-400 border-[#333]'}"
+                >
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(cat) {
+            activeCategory = cat;
+            renderCategories();
+            renderMenu();
+            lucide.createIcons();
+        }
+
+        function renderMenu() {
+            const grid = document.getElementById('menu-grid');
+            const filtered = activeCategory === 'Todos' ? MENU_ITEMS : MENU_ITEMS.filter(i => i.category === activeCategory);
+            
+            grid.innerHTML = filtered.map(item => `
+                <div class="group bg-[#1A1A1A] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-red-900/10 transition-all duration-300 border border-[#2A2A2A] hover:border-[#B91C1C]/30 flex flex-col">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="${item.imageUrl}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100">
+                        ${item.popular ? '<div class="absolute top-4 right-4 bg-[#FFD700] text-black text-[10px] font-bold px-3 py-1 rounded-sm uppercase tracking-wider shadow-md">Asombroso</div>' : ''}
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow relative">
+                        <div class="absolute -top-6 left-6">
+                            <span class="text-[10px] font-bold text-white bg-[#B91C1C] px-3 py-1 rounded-full uppercase tracking-wider border border-[#1A1A1A] shadow-sm">${item.category}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2 mt-2 leading-tight">${item.title}</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-6 flex-grow">${item.description}</p>
+                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-[#333]">
+                            <span class="text-2xl font-bold text-white">$${item.price.toLocaleString('es-AR')}</span>
+                            <button onclick="addToCart('${item.id}')" class="bg-[#B91C1C] text-white hover:bg-[#991b1b] p-3 rounded-full transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function addToCart(id) {
+            const item = MENU_ITEMS.find(i => i.id === id);
+            const existing = cart.find(i => i.id === id);
+            
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ ...item, quantity: 1 });
+            }
+            
+            updateCartUI();
+            toggleCart(true);
+            
+            // Badge Animation
+            const badge = document.getElementById('cart-badge');
+            badge.classList.add('badge-anim');
+            setTimeout(() => badge.classList.remove('badge-anim'), 300);
+        }
+
+        function updateQuantity(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.id !== id);
+                }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+            const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+            
+            // Update Badge
+            const badge = document.getElementById('cart-badge');
+            if (totalItems > 0) {
+                badge.innerText = totalItems;
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            // Render Items
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-gray-500 space-y-4">
+                        <i data-lucide="shopping-bag" class="w-10 h-10 text-[#B91C1C]"></i>
+                        <p class="text-xl font-light text-gray-400">Tu carrito está vacío</p>
+                    </div>
+                `;
+                document.getElementById('cart-footer').classList.add('hidden');
+            } else {
+                cartItemsContainer.innerHTML = cart.map(item => `
+                    <div class="flex gap-4 bg-[#1E1E1E] p-3 rounded-xl border border-[#333]">
+                        <img src="${item.imageUrl}" class="w-20 h-20 object-cover rounded-lg bg-[#333]">
+                        <div class="flex-1 flex flex-col justify-between py-1">
+                            <div>
+                                <h3 class="text-white font-medium text-sm leading-tight line-clamp-1">${item.title}</h3>
+                                <p class="text-[#FFD700] font-bold text-base mt-1">$${(item.price * item.quantity).toLocaleString('es-AR')}</p>
+                            </div>
+                            <div class="flex items-center gap-3 w-fit bg-[#2A2A2A] rounded-lg p-1 border border-[#333]">
+                                <button onclick="updateQuantity('${item.id}', -1)" class="w-6 h-6 flex items-center justify-center bg-black/50 rounded-md hover:bg-black text-white"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                                <span class="text-white font-bold text-sm w-5 text-center">${item.quantity}</span>
+                                <button onclick="updateQuantity('${item.id}', 1)" class="w-6 h-6 flex items-center justify-center bg-[#B91C1C] text-white rounded-md hover:bg-[#991b1b]"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('cart-footer').classList.remove('hidden');
+                document.getElementById('cart-total').innerText = `$${subtotal.toLocaleString('es-AR')}`;
+            }
+            lucide.createIcons();
+        }
+
+        function toggleCart(forceOpen = false) {
+            const drawer = document.getElementById('cart-drawer');
+            const backdrop = document.getElementById('cart-backdrop');
+            
+            if (forceOpen || drawer.classList.contains('translate-x-full')) {
+                drawer.classList.remove('translate-x-full');
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                drawer.classList.add('translate-x-full');
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function checkoutWhatsApp() {
+            if (cart.length === 0) return;
+            const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+            
+            let message = "Hola *La Artesanal*! 👑 Quiero hacer un pedido:\n\n";
+            cart.forEach(item => {
+                message += `- ${item.quantity}x ${item.title} ($${(item.price * item.quantity).toLocaleString('es-AR')})\n`;
+            });
+            message += `\n*Total: $${subtotal.toLocaleString('es-AR')}*`;
+            message += "\n\n📍 Dirección de envío: ";
+            
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        function renderFooter() {
+            const year = new Date().getFullYear();
+            // Static content is mostly HTML, dynamic parts could go here if needed
+        }
+
+        // Init App
+        window.onload = init;
+
+    </script>
+
+    <!-- UI STRUCTURE -->
+    
+    <!-- Header -->
+    <header id="main-header" class="fixed top-0 left-0 right-0 z-40 transition-all duration-300 py-5 bg-transparent"></header>
+
+    <!-- Hero -->
+    <div class="relative py-28 w-full overflow-hidden flex items-center bg-[#121212]">
+        <div class="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=2000&auto=format&fit=crop" class="w-full h-full object-cover opacity-40">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/60 to-transparent"></div>
+        </div>
+        <div class="relative z-10 w-full px-6 max-w-7xl mx-auto flex flex-col justify-center text-center items-center">
+            <div class="flex items-center justify-center h-16 w-16 bg-[#B91C1C] rounded-full border-4 border-[#FFD700] shadow-xl shadow-red-900/50 mb-6">
+                <i data-lucide="crown" class="text-white fill-[#FFD700] w-8 h-8"></i>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-sans font-bold text-white mb-4 leading-tight tracking-tight uppercase drop-shadow-lg">
+                La Artesanal <span class="block text-[#B91C1C] text-3xl md:text-5xl mt-2 font-serif tracking-widest">Villa Ballester</span>
+            </h1>
+            <p class="text-gray-200 text-lg md:text-xl mb-8 font-light max-w-lg leading-relaxed">
+                Delivery a Domicilio. <br/> <span class="text-[#FFD700] font-bold">¡El sandwich que enamora!</span>
+            </p>
+            <div class="flex items-center gap-2 text-white text-sm md:text-base mb-10 font-medium bg-[#121212]/80 backdrop-blur-md px-6 py-3 rounded-full border border-[#B91C1C]/50">
+                <i data-lucide="map-pin" class="text-[#B91C1C] w-4 h-4"></i>
+                <span>Alvear 1751, Villa Ballester</span>
+            </div>
+            <button onclick="document.getElementById('menu-section').scrollIntoView({behavior: 'smooth'})" class="bg-[#B91C1C] hover:bg-[#991b1b] text-white font-extrabold py-4 px-12 rounded-full transition-all shadow-lg flex items-center gap-3 uppercase tracking-widest text-sm">
+                HACER PEDIDO <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Menu Section -->
+    <section id="menu-section" class="py-20 px-4 md:px-8 max-w-7xl mx-auto bg-[#121212]">
+        <div class="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-wide uppercase">
+                Nuestro <span class="text-[#B91C1C]">Menú</span>
+            </h2>
+            <div class="flex justify-center gap-1 mt-4">
+                <div class="w-16 h-1 bg-[#B91C1C] rounded-full"></div>
+                <div class="w-4 h-1 bg-[#FFD700] rounded-full"></div>
+                <div class="w-16 h-1 bg-[#B91C1C] rounded-full"></div>
+            </div>
+        </div>
+        
+        <!-- Categories -->
+        <div class="flex justify-center mb-12">
+            <div id="categories-container" class="flex gap-3 overflow-x-auto no-scrollbar pb-4 px-4 max-w-full"></div>
+        </div>
+
+        <!-- Grid -->
+        <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </section>
+
+    <!-- Cart Drawer -->
+    <div id="cart-backdrop" onclick="toggleCart()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 transition-opacity duration-300 opacity-0 pointer-events-none"></div>
+    <div id="cart-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[450px] bg-[#121212] z-50 transform transition-transform duration-300 ease-out translate-x-full shadow-2xl flex flex-col border-l border-[#333]">
+        <div class="p-6 border-b border-[#333] flex justify-between items-center bg-[#121212]">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-2 uppercase tracking-wide">Tu Pedido <span class="text-[#B91C1C]">👑</span></h2>
+            <button onclick="toggleCart()" class="p-2 hover:bg-[#333] rounded-full text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4 bg-[#121212]"></div>
+        <div id="cart-footer" class="p-6 bg-[#121212] border-t border-[#333] pb-8 hidden z-10">
+            <div class="flex justify-between items-end mb-6">
+                <span class="text-gray-400 text-lg font-medium">Total</span>
+                <span id="cart-total" class="text-4xl font-bold text-white">$0</span>
+            </div>
+            <button onclick="checkoutWhatsApp()" class="w-full bg-[#25D366] hover:bg-[#1ebc57] text-white py-4 rounded-full font-bold text-lg shadow-lg flex items-center justify-center gap-3 uppercase">
+                <i data-lucide="message-circle" class="w-6 h-6"></i> Enviar a WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#121212] text-white py-16 border-t border-[#333]">
+        <div class="max-w-7xl mx-auto px-4 md:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div class="text-center md:text-left flex flex-col items-center md:items-start">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="h-10 w-10 rounded-full bg-[#B91C1C] flex items-center justify-center shadow-lg border border-[#FFD700]">
+                            <i data-lucide="crown" class="text-white fill-[#FFD700] w-4 h-4"></i>
+                        </div>
+                        <span class="font-bold text-2xl tracking-wide uppercase">LA ARTESANAL</span>
+                    </div>
+                    <p class="text-gray-400 font-light leading-relaxed max-w-sm text-sm">Pizzas, hamburguesas y sandwiches abundantes. La calidad y el sabor que nos caracteriza.</p>
+                </div>
+                <div class="space-y-6 text-center md:text-left">
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-3">
+                        <div class="text-[#FFD700] bg-[#222] p-2 rounded-lg border border-[#333]"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
+                        <div><h4 class="font-bold text-lg mb-1">Alvear 1751</h4><p class="text-gray-400 text-sm">Villa Ballester, Buenos Aires</p></div>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-3">
+                        <div class="text-[#B91C1C] bg-[#222] p-2 rounded-lg border border-[#333]"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                        <div><h4 class="font-bold text-lg mb-1">Horarios</h4><p class="text-gray-400 text-sm">Todos los días 19 a 23 hs<br/>(Martes Cerrado)</p></div>
+                    </div>
+                </div>
+                <div class="text-center md:text-right flex flex-col items-center md:items-end justify-center">
+                    <div class="flex flex-col items-center md:items-end gap-2 mb-4 text-gray-300">
+                        <div class="flex items-center gap-2"><i data-lucide="phone" class="text-[#B91C1C] w-4 h-4"></i> <span>7396-5729</span></div>
+                        <div class="flex items-center gap-2"><i data-lucide="phone" class="text-[#B91C1C] w-4 h-4"></i> <span>2007-0203</span></div>
+                    </div>
+                    <a href="https://www.instagram.com/la_artesanal_oficial/" target="_blank" class="flex items-center gap-2 text-white text-lg font-bold hover:text-[#FFD700]">
+                        Seguinos en Instagram <i data-lucide="external-link" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-[#333] mt-12 pt-8 text-center text-gray-600 text-xs font-medium uppercase tracking-wider">
+                &copy; 2024 La Artesanal - Villa Ballester.
+            </div>
+        </div>
+    </footer>
+</body>
 </html>

@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Plus, Pizza, Sandwich, Hexagon, CircleDot } from 'lucide-react';
-import { MenuItem, Category } from '../types';
-import { MENU_ITEMS } from '../constants';
+import { MenuItem, Category } from '../types.ts';
+import { MENU_ITEMS } from '../constants.ts';
 
 interface MenuGridProps {
   onAddToCart: (item: MenuItem) => void;
